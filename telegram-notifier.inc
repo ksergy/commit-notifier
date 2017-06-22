@@ -14,16 +14,18 @@ function notifier {
   local json=""
   local cmd_line=""
 
-  commit=$(echo "$commit" | sed 's/"/_/g')
+  commit=$(echo "$commit" | sed 's/"/<double-quote>/g')
+  commit=$(echo "$commit" | sed "s/'/<quote>/g")
+  commit=$(echo "$commit" | sed 's/\\/<backslash>/g')
 
   for person in ${notified[@]}; do
     echo "Notify '$person' about '$commit'"
     json="$json1$person$json2$commit$json3"
-    cmd_line="curl -X POST -H 'Content-Type: application/json' -d '$json' '$url'"
+    cmd_line="curl -s -X POST -H 'Content-Type: application/json' -d '$json' '$url'"
 
     echo "  About to: $cmd_line"
 
-    eval "$cmd_line" || true
+    eval "$cmd_line" > /dev/null || true
   done
 }
 
