@@ -23,8 +23,6 @@ function notifier {
     json="$json1$person$json2$commit$json3"
     cmd_line="curl -s -X POST -H 'Content-Type: application/json' -d '$json' '$url'"
 
-    echo "  About to: $cmd_line"
-
     eval "$cmd_line" > /dev/null || true
   done
 }
