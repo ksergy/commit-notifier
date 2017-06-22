@@ -6,7 +6,6 @@ set -u
 SELF=$(basename "$0")
 DATE=$(date -u +'%F %T')
 REQUIRED_ARGUMENTS_AMOUNT=1
-CONFIG_FD=3
 
 KW_BRANCH="#BRANCH#"
 KW_PREV_DATE="#PREV_DATE#"
@@ -18,7 +17,11 @@ declare FETCH_CMD=""
 declare CHECKOUT_CMD=""
 declare GET_LOGS_CMD=""
 declare GET_INITIAL_COMMIT_AUTHOR_CMD=""
-declare -A BRANCHES=()
+declare -a BRANCHES=()
+
+DIR="${BASH_SOURCE%/*}"
+[[ ! -d "$DIR" ]] && DIR="$PWD"
+. "$DIR/notifier.inc"
 
 function die {
   echo -en "\x1b[31m$@\x1b[0m\n" >&2
@@ -63,7 +66,7 @@ function notify_branch_but_author {
   echo "Commits count: ${#commits[@]}"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    echo "Notify about ${commits[$idx]} : ${notified[@]}"
+    notifier "${commits[$idx]}" ${notified[@]}
   done
 
   rm $tmp_file
@@ -95,7 +98,7 @@ function notify_branch_all {
   mapfile -t commits <<< "$tmp_file"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    echo "Notify about ${commits[$idx]} : ${notified[@]}"
+    notifier "${commits[$idx]}" ${notified[@]}
   done
 
   rm $tmp_file
@@ -135,39 +138,26 @@ function process_branch {
 
 CONFIG_PATH="$1"
 
-eval "exec $CONFIG_FD<'$CONFIG_PATH'"
-
-read -u $CONFIG_FD PATH_TO_REPO
-read -u $CONFIG_FD FETCH_CMD
-read -u $CONFIG_FD CHECKOUT_CMD
-read -u $CONFIG_FD GET_LOGS_CMD
-read -u $CONFIG_FD GET_INITIAL_COMMIT_AUTHOR_CMD
+source "$CONFIG_PATH"
 
 pushd "$PATH_TO_REPO"
 
-#set -x
-while read -u $CONFIG_FD line; do
-  echo "Line read: $line"
+for line in ${BRANCHES[@]}; do
   array=(${line//;/ })
 
   [[ ${#array[@]} -ge 3 ]] || continue
-
-  echo "Array: ${array[@]}"
 
   branch_name=${array[0]}
   rule=${array[1]}
 
   notified=(${array[@]:2})
 
-  echo "Notified: ${notified[@]}"
+  echo "  Branch: '$branch_name', rule: '$rule', notified: '${notified[@]}'"
 
   process_branch "$branch_name" "$rule" ${notified[@]}
 done
-#set +x
 
 popd
-
-eval "exec $CONFIG_FD<&-"
 
 echo -en '\x1b[32mDone\x1b[0m\n'
 
