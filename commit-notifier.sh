@@ -147,8 +147,6 @@ pushd "$PATH_TO_REPO"
 
 prepare
 
-prepare
-
 for line in ${BRANCHES[@]}; do
   echo "Line: $line"
 
