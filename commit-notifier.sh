@@ -4,7 +4,8 @@ set -e
 set -u
 
 SELF=$(basename "$0")
-DATE=$(date -u +'%F %T')
+DATE_FORMAT="+'%F %T %z'"
+DATE=$(date -u "$DATE_FORMAT")
 REQUIRED_ARGUMENTS_AMOUNT=1
 
 KW_BRANCH="#BRANCH#"
@@ -36,37 +37,46 @@ function prepare {
   $FETCH_CMD
 }
 
+function create_get_logs_cmd {
+ echo "$GET_LOGS_CMD" |
+   sed "s/$KW_BRANCH/$1/" |
+   sed "s/$KW_PREV_DATE/$2/" |
+   sed "s/$KW_CUR_DATE/$3/"
+}
+
+function get_date_from_file {
+  [[ -f "$1" ]] && {
+    cat "$1"
+  } || {
+    date -u +"$DATE_FORMAT" -d@0
+  }
+}
+
 function notify_branch_but_author {
   local branch="$1"
   local -a notified=( ${@:2} )
 
   local prev_date_file=".commit-notifier.$branch.prev_date"
-  local prev_date="";
-  [[ -f "$prev_date_file" ]] && {
-    prev_date=$(cat "$prev_date_file")
-  } || {
-    prev_date=$(date +'%F %T' -d@0)
-  }
+  local prev_date=$(get_date_from_file "$prev_date_file");
 
   local get_initial_commit_author_cmd=$(echo "$GET_INITIAL_COMMIT_AUTHOR_CMD" | sed "s/$KW_BRANCH/$branch/")
-  local get_logs_cmd=$(echo "$GET_LOGS_CMD" |
-                         sed "s/$KW_BRANCH/$branch/" |
-                         sed "s/$KW_PREV_DATE/$prev_date/" |
-                         sed "s/$KW_CUR_DATE/$DATE/")
+  local get_logs_cmd=$(create_get_logs_cmd "$branch" "$prev_date" "$DATE")
 
   local initial_commit_author=$( eval "$get_initial_commit_author_cmd" )
   local tmp_file=$(mktemp)
 
   echo "Initial commit author: $branch: $initial_commit_author"
 
-  eval "$get_logs_cmd | egrep -v -- '$initial_commit_author'\$" > "$tmp_file"
+  eval "$get_logs_cmd | egrep -v -- '$initial_commit_author'\$" > "$tmp_file" || true
 
   mapfile -t commits < "$tmp_file"
 
   echo "Commits count: ${#commits[@]}"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    notifier "${commits[$idx]}" ${notified[@]}
+    cmd="notifier \"${commits[$idx]}\" ${notified[@]}"
+    echo "Cmd: $cmd"
+    eval "$cmd"
   done
 
   rm $tmp_file
@@ -79,26 +89,19 @@ function notify_branch_all {
   local -a notified=( ${@:2} )
 
   local prev_date_file=".commit-notifier.$branch.prev_date"
-  local prev_date="";
-  [[ -f "$prev_date_file" ]] && {
-    prev_date=$(cat "$prev_date_file")
-  } || {
-    prev_date=$(date +'%F %T' -d@0)
-  }
+  local prev_date=$(get_date_from_file "$prev_date_file");
 
-  local get_logs_cmd=$(echo "$GET_LOGS_CMD" |
-                         sed "s/$KW_BRANCH/$branch/" |
-                         sed "s/$KW_PREV_DATE/$prev_date" |
-                         sed "s/$KW_CUR_DATE/$DATE/")
-
+  local get_logs_cmd=$(create_get_logs_cmd "$branch" "$prev_date" "$DATE")
   local tmp_file=$(mktemp)
 
   eval "$get_logs_cmd"  > "$tmp_file"
 
-  mapfile -t commits <<< "$tmp_file"
+  mapfile -t commits < "$tmp_file"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    notifier "${commits[$idx]}" ${notified[@]}
+    cmd="notifier \"${commits[$idx]}\" ${notified[@]}"
+    echo "Cmd: $cmd"
+    eval "$cmd"
   done
 
   rm $tmp_file
@@ -122,7 +125,7 @@ function process_branch {
     notify_branch_but_author "$branch" ${notified[@]}
     ;;
 
-    '*')
+    '+')
     # send notification for each and every pushed commit
     notify_branch_all "$branch" ${notified[@]}
     ;;
@@ -144,18 +147,23 @@ pushd "$PATH_TO_REPO"
 
 prepare
 
+prepare
+
 for line in ${BRANCHES[@]}; do
+  echo "Line: $line"
+
   array=(${line//;/ })
+
+  echo "  Array: ${array[@]}"
 
   [[ ${#array[@]} -ge 3 ]] || continue
 
   branch_name=${array[0]}
   rule=${array[1]}
 
-  notified=(${array[@]:2})
+  notified=( ${array[@]:2} )
 
   echo "  Branch: '$branch_name', rule: '$rule', notified: '${notified[@]}'"
-
   process_branch "$branch_name" "$rule" ${notified[@]}
 done
 
