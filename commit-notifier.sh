@@ -142,6 +142,8 @@ source "$CONFIG_PATH"
 
 pushd "$PATH_TO_REPO"
 
+prepare
+
 for line in ${BRANCHES[@]}; do
   array=(${line//;/ })
 
