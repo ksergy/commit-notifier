@@ -1,0 +1,62 @@
+Suppose you have a team of developers. All of the developers have appropriate
+access rights to push to your code base, namely VCS repository.
+
+It is OK when there are at least two main branches (current develop version
+and latest stable release version) and at least a single work branch per each
+developed feature.
+
+Nevertheless it's rare (if not impossible at all) that your favourite VCS
+allows for per-branch access rights control.
+
+In that case you'd like to know when someone makes changes in main branch
+or in branch of a feature developed by you. Whether it's a a dreadful mistype
+of the other developer or a cruel saboteur in your ranks these scripts may come
+quite handy of you.
+
+How to use these scripts you can ask.
+Well, it's not that hard as one may think.
+
+The main script is 'commit-notifier.sh'
+It's helper script named 'notifier.inc' defines a function 'notifier' which
+will be called upon each and every commit for you to be notified on.
+This function will be called with a lot of arguments. The first one is
+commit description. The latter arguments list persons to be notified.
+
+FYI there is already a Telegram notifier script in 'telegram-notifier.inc'
+Just symlink 'notifier.inc' to it to use it and provide a valid bot key
+in 'telegram-bot-key.inc' file.
+
+The main script accepts a single argument. This argument must be a path to
+confiuguration file. It will be sourced by main script.
+
+Configuration consists of multiple parameters:
+PATH_TO_REPO    - is a self-describing name
+FETCH_CMD       - defines how you download recent changes
+CHECKOUT_CMD    - defines how you switch to branch. #BRANCH# keyword will
+                  be replaced with actual branch name. One may put a no-op
+                  in this variable if there is no need to checkout a branch
+                  to fetch it's logs.
+GET_LOGS_CMD    - defines how you fetch logs starting at #PREV_DATE# till
+                  #CUR_DATE# for branch #BRANCH#.
+                  The output of the command must be a single line per commit.
+                  Every line must end with commit author.
+                  The begginning of the line is anything you may want.
+                  Whole line will be passed to 'notifier' function as the
+                  first argument.
+GET_INITIAL_COMMIT_AUTHOR_CMD
+                - defines how you fetch author of the first commit of
+                  the branch #BRANCH#.
+BRANCHES        - is an array of descriptions with each watched branch.
+
+Branch description is line in form of:
+branch-name;watch-rule;notified-person-1;notified-person-2;...
+
+branch-name     - branch name
+watch-rule      - '-' for persons to be notified on every commit made by
+                  non initial committer.
+                  '+' for persons to be notified on each and every commit
+notified-person-1, 2, ...
+                - argument number 2, 3, and so forth of 'notifier' function
+
+That's all folks!
+
