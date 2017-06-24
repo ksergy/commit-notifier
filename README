@@ -48,6 +48,8 @@ GET_INITIAL_COMMIT_AUTHOR_CMD
                   the branch #BRANCH#.
 BRANCHES        - is an array of descriptions with each watched branch.
 
+#BRANCH# keyword will be raplaced with double-quoted branch name.
+
 Branch description is line in form of:
 branch-name;watch-rule;notified-person-1;notified-person-2;...
 
