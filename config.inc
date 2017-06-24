@@ -1,3 +1,4 @@
+REPO_ALIAS="The Project"
 PATH_TO_REPO="$HOME/project"
 FETCH_CMD="hg pull"
 CHECKOUT_CMD="hg update #BRANCH#"

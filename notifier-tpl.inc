@@ -1,9 +1,11 @@
-# $1 --- commit: hash date branch author
-# $2, 3, ... --- notified ones
+# $1 --- repository alias
+# $2 --- commit: hash date branch author
+# $3, 4, ... --- notified ones
 function notifier {
-  local commit="$1"
-  local -a notified=( ${@:2} )
+  local repo_alias="$1"
+  local commit="$2"
+  local -a notified=( ${@:3} )
 
-  echo "Notify about $commit : ${notified[@]}"
+  echo "Notify about $commit in $repo_alias : ${notified[@]}"
 }
 

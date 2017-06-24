@@ -13,6 +13,7 @@ KW_PREV_DATE="#PREV_DATE#"
 KW_CUR_DATE="#CUR_DATE#"
 
 declare CONFIG_PATH=""
+declare REPO_ALIAS=""
 declare PATH_TO_REPO=""
 declare FETCH_CMD=""
 declare CHECKOUT_CMD=""

@@ -20,7 +20,8 @@ The main script is 'commit-notifier.sh'
 It's helper script named 'notifier.inc' defines a function 'notifier' which
 will be called upon each and every commit for you to be notified on.
 This function will be called with a lot of arguments. The first one is
-commit description. The latter arguments list persons to be notified.
+repository alias, then there is commit description. The latter arguments
+list persons to be notified.
 
 FYI there is already a Telegram notifier script in 'telegram-notifier.inc'
 Just symlink 'notifier.inc' to it to use it and provide a valid bot key
@@ -30,6 +31,7 @@ The main script accepts a single argument. This argument must be a path to
 confiuguration file. It will be sourced by main script.
 
 Configuration consists of multiple parameters:
+REPO_ALIAS      - the name for the repository
 PATH_TO_REPO    - is a self-describing name
 FETCH_CMD       - defines how you download recent changes
 CHECKOUT_CMD    - defines how you switch to branch. #BRANCH# keyword will
@@ -59,6 +61,8 @@ watch-rule      - '-' for persons to be notified on every commit made by
                   '+' for persons to be notified on each and every commit
 notified-person-1, 2, ...
                 - argument number 2, 3, and so forth of 'notifier' function
+
+--
 
 That's all folks!
 
