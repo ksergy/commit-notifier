@@ -4,7 +4,7 @@ set -e
 set -u
 
 SELF=$(basename "$0")
-DATE_FORMAT="+'%F %T %z'"
+DATE_FORMAT="+%F %T %z"
 DATE=$(date -u "$DATE_FORMAT")
 REQUIRED_ARGUMENTS_AMOUNT=1
 
@@ -39,7 +39,7 @@ function prepare {
 
 function create_get_logs_cmd {
  echo "$GET_LOGS_CMD" |
-   sed "s/$KW_BRANCH/$1/" |
+   sed "s/$KW_BRANCH/\"$1\"/" |
    sed "s/$KW_PREV_DATE/$2/" |
    sed "s/$KW_CUR_DATE/$3/"
 }
@@ -48,7 +48,7 @@ function get_date_from_file {
   [[ -f "$1" ]] && {
     cat "$1"
   } || {
-    date -u +"$DATE_FORMAT" -d@0
+    date -u "$DATE_FORMAT" -d@0
   }
 }
 
