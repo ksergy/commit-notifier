@@ -59,7 +59,7 @@ function notify_branch_but_author {
   local prev_date_file=".commit-notifier.$branch.prev_date"
   local prev_date=$(get_date_from_file "$prev_date_file");
 
-  local get_initial_commit_author_cmd=$(echo "$GET_INITIAL_COMMIT_AUTHOR_CMD" | sed "s/$KW_BRANCH/$branch/")
+  local get_initial_commit_author_cmd=$(echo "$GET_INITIAL_COMMIT_AUTHOR_CMD" | sed "s/$KW_BRANCH/\"$branch\"/")
   local get_logs_cmd=$(create_get_logs_cmd "$branch" "$prev_date" "$DATE")
 
   local initial_commit_author=$( eval "$get_initial_commit_author_cmd" )
