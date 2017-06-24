@@ -75,7 +75,7 @@ function notify_branch_but_author {
   echo "Commits count: ${#commits[@]}"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    cmd="notifier \"${commits[$idx]}\" ${notified[@]}"
+    cmd="notifier \"$REPO_ALIAS\" \"${commits[$idx]}\" ${notified[@]}"
     echo "Cmd: $cmd"
     eval "$cmd"
   done
@@ -100,7 +100,7 @@ function notify_branch_all {
   mapfile -t commits < "$tmp_file"
 
   for ((idx=0; idx < ${#commits[@]}; ++idx)); do
-    cmd="notifier \"${commits[$idx]}\" ${notified[@]}"
+    cmd="notifier \"$REPO_ALIAS\" \"${commits[$idx]}\" ${notified[@]}"
     echo "Cmd: $cmd"
     eval "$cmd"
   done
