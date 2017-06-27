@@ -82,7 +82,7 @@ function notify_branch_but_author {
 
   rm $tmp_file
 
-  echo "$DATE" > $prev_date_file
+  [[ ${#commits[@]} -eq 0 ]] || echo "$DATE" > $prev_date_file
 }
 
 function notify_branch_all {
@@ -107,7 +107,7 @@ function notify_branch_all {
 
   rm $tmp_file
 
-  echo "$DATE" > $prev_date_file
+  [[ ${#commits[@]} -eq 0 ]] || echo "$DATE" > $prev_date_file
 }
 
 function process_branch {
